@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then

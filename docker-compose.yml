@@ -1,0 +1,51 @@
+networks:
+  pg-net:
+    driver: bridge
+
+services:
+  master:
+    image: postgres:16
+    container_name: pg-master
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: masterpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./master-init:/docker-entrypoint-initdb.d
+      - pg-master-data:/var/lib/postgresql/data
+    networks:
+      - pg-net
+
+  replica:
+    build: ./replica-init
+    container_name: pg-replica
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: replicapass
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg-replica-data:/var/lib/postgresql/data
+    depends_on:
+      - master
+    networks:
+      - pg-net
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 9001:8080
+    networks:
+      - pg-net
+    depends_on:
+      - master
+      - replica
+
+volumes:
+  pg-master-data:
+    driver: local
+  pg-replica-data:
+    driver: local
